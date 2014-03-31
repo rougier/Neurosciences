@@ -1,4 +1,5 @@
-Computational Neurosciences models repository
----------------------------------------------
+Computational Neurosciences
+---------------------------
 
-This is a public repository of computational neuroscience models.
+This is a public repository for computational neuroscience models from the
+litterature.
