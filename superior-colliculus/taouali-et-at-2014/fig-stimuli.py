@@ -32,6 +32,7 @@ import os
 import numpy as np
 
 from helper import *
+from stimulus import *
 from graphics import *
 from projections import *
 
@@ -43,19 +44,8 @@ if __name__ == '__main__':
     from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
     from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
-    P = retina_to_colliculus( (4*1024,4*512), (512,512) )
-
-
     fig = plt.figure(figsize=(10,8), facecolor='w')
     ax1, ax2 = ImageGrid(fig, 111, nrows_ncols=(1,2), axes_pad=0.5)
-
-    def stimulus(shape, position, size):
-        x,y = polar_to_cartesian(position[0]/90.0, np.pi*position[1]/180.0)
-        Y,X = np.mgrid[0:shape[0],0:shape[1]]
-        X = X/float(shape[1])
-        Y = 2*Y/float(shape[0])-1
-        r = (X-x)**2+(Y-y)**2
-        return np.exp(-0.5*r/(size/90.0))
 
     polar_frame(ax1, legend=True)
     zax = zoomed_inset_axes(ax1, 6, loc=1)
@@ -67,12 +57,14 @@ if __name__ == '__main__':
     zax.set_frame_on(True)
     mark_inset(ax1, zax, loc1=2, loc2=4, fc="none", ec="0.5")
 
-    R  = stimulus((4*1024,4*512), (1,0), 0.005)
-    R += stimulus((4*1024,4*512), (5,0), 0.005)
+    # Stimuli luminances are not additive
+    R = np.maximum(stimulus(position=(1,0)), stimulus(position=(5,0)))
+
     polar_imshow(ax1, R)
     polar_imshow(zax, R)
 
     logpolar_frame(ax2, legend=True)
+    P = retina_projection()
     SC = R[P[...,0], P[...,1]]
     logpolar_imshow(ax2, SC)
 

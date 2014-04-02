@@ -29,21 +29,28 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license and that you accept its terms.
 # -----------------------------------------------------------------------------
+import numpy as np
 
 second       = 1.0
 millisecond  = 0.001
-dt           = 1*millisecond
-duration     = 3*second
+dt           = 5*millisecond
+duration     = 10*second
+noise        = 0.05
 
-retina_shape     = (4096,2048)
-projection_shape = (512,512)
-n = 64
-colliculus_shape = (n,n)
+retina_shape     = np.array([4096,2048]).astype(float)
+projection_shape = np.array([512,512]).astype(float)
+n = 2*64
+colliculus_shape = np.array([n,n]).astype(float)
 
+# Default stimulus
+stimulus_size      = 1.5 # in degrees
+stimulus_intensity = 1.5
+
+# DNF parameters
 sigma_e  = 0.10
-A_e      = 1.25
+A_e      = 1.30
 sigma_i  = 1.00
-A_i      = 0.70
-alpha    = 10.0
+A_i      = 0.65
+alpha    = 12.5
 tau      = 10*millisecond
 scale    = 40.0*40.0/(n*n)

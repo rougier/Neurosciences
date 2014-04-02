@@ -43,7 +43,7 @@ if __name__ == '__main__':
     from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
     from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
-    P = retina_to_colliculus( (4*1024,4*512), (512,512) )
+    P = retina_to_projection()
 
     # Checkerboard pattern for retina
     grid = 2*32
@@ -53,10 +53,11 @@ if __name__ == '__main__':
     R = R.repeat(grid, axis=0).repeat(grid, axis=1)
 
     # Mask with a disc
-    R = R * disc((4*1024,4*1024), (4*512,4*512), 4*512)
+    R = R * disc((retina_shape[0],retina_shape[0]),
+                 (projection_shape[0],projection_shape[1]), projection_shape[0])
 
     # Take half-retina
-    R = R[:,4*512:]
+    R = R[:,projection_shape[1]:]
 
     # Project to colliculus
     SC = R[P[...,0], P[...,1]]

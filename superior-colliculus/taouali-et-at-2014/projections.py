@@ -30,6 +30,7 @@
 # -----------------------------------------------------------------------------
 import os
 import numpy as np
+from parameters import *
 
 
 def cartesian_to_polar(x, y):
@@ -67,7 +68,7 @@ def polar_to_logpolar(rho, theta):
     return x, y
 
 
-def retina_to_colliculus(Rs=(512,256), Cs=(64,64)):
+def retina_projection(Rs=retina_shape, Ps=projection_shape):
     '''
     Compute the projection indices from retina to colliculus
 
@@ -77,11 +78,11 @@ def retina_to_colliculus(Rs=(512,256), Cs=(64,64)):
     Rs : (int,int)
         Half-retina shape
 
-    Cs : (int,int)
-        Colliculus shape
+    Ps : (int,int)
+        Retina projection shape (might be different from colliculus)
     '''
 
-    filename = "retina (%d,%d) - colliculus (%d,%d).npy" % (Rs[0],Rs[1],Cs[0],Cs[1])
+    filename = "retina (%d,%d) - colliculus (%d,%d).npy" % (Rs[0],Rs[1],Ps[0],Ps[1])
     if os.path.exists(filename):
         return np.load(filename)
 
@@ -103,7 +104,7 @@ def retina_to_colliculus(Rs=(512,256), Cs=(64,64)):
     ymin,ymax = y.min(), y.max()
     y = (y-ymin)/(ymax-ymin)
 
-    P = np.zeros((Cs[0],Cs[1],2), dtype=int)
+    P = np.zeros((Ps[0],Ps[1],2), dtype=int)
     xi = np.rint(x*(Rs[0]-1)).astype(int)
     yi = np.rint((0.0+1.0*y)*(Rs[1]-1)).astype(int)
 
@@ -112,8 +113,8 @@ def retina_to_colliculus(Rs=(512,256), Cs=(64,64)):
     xc = (xc-xmin)/(xmax-xmin)
     ymin,ymax = yc.min(), yc.max()
     yc = (yc-ymin)/(ymax-ymin)
-    xc = np.rint(xc*(Cs[0]-1)).astype(int)
-    yc = np.rint((.0+yc*1.0)*(Cs[1]-1)).astype(int)
+    xc = np.rint(xc*(Ps[0]-1)).astype(int)
+    yc = np.rint((.0+yc*1.0)*(Ps[1]-1)).astype(int)
 
     P[xc,yc,0] = xi
     P[xc,yc,1] = yi

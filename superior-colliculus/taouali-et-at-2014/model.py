@@ -40,49 +40,64 @@ from graphics import *
 from parameters import *
 from projections import *
 
-n = colliculus_shape[0]
-K = A_e*gaussian((2*n+1,2*n+1), sigma_e) - A_i #*gaussian((2*n+1,2*n+1), sigma_i)
 
-# Prepare fft
-K_shape = np.array(K.shape)
-fft_shape = np.array(best_fft_shape(colliculus_shape+K_shape//2))
-K_fft = rfft2(K,fft_shape)
-i0,j0 = K.shape[0]//2, K.shape[1]//2
-i1,j1 = i0+colliculus_shape[0], j0+colliculus_shape[1]
+class Model:
 
-P = retina_projection()
-# R = np.maximum( stimulus((5.0,-25.0)), stimulus((5.0,25.0)) )
-R = stimulus((25.0,0.0))
+    def __init__(self):
+        # Retina
+        self.R = np.zeros(retina_shape)
 
-SCu = np.zeros(colliculus_shape)
-SCv = np.zeros(colliculus_shape)
-I_high = R[P[...,0], P[...,1]]
-I = zoom(I_high, colliculus_shape/projection_shape)
-I += np.random.uniform(-noise/2,+noise/2,I.shape)
+        # Superior colliculus
+        self.SC_V = np.zeros(colliculus_shape)
+        self.SC_U = np.zeros(colliculus_shape)
 
-s = fft_shape
-n = int(duration/dt)
+        # Projection from retina to colliculus
+        self.P = retina_projection()
 
-for i in range(int(duration/dt)):
-    L = (irfft2(rfft2(SCv,s)*K_fft,s)).real[i0:i1,j0:j1]
-    SCu += dt/tau*(-SCu + (scale*L + I)/alpha)
-    SCv = np.minimum(np.maximum(0,SCu),1)
-    # SCv = np.maximum(0,SCu)
+        # Parameters
+        self.sigma_e  = sigma_e
+        self.A_e      = A_e
+        self.sigma_i  = sigma_i
+        self.A_i      = A_i
+        self.alpha    = alpha
+        self.tau      = tau
+        self.scale    = scale
+        self.noise    = noise
 
-fig = plt.figure(figsize=(10,8), facecolor='w')
-ax1, ax2 = ImageGrid(fig, 111, nrows_ncols=(1,2), axes_pad=0.5)
-polar_frame(ax1, legend=True)
-zax = zoomed_inset_axes(ax1, 6, loc=1)
-polar_frame(zax, zoom=True)
-zax.set_xlim(0.0, 0.1)
-zax.set_xticks([])
-zax.set_ylim(-.05, .05)
-zax.set_yticks([])
-zax.set_frame_on(True)
-mark_inset(ax1, zax, loc1=2, loc2=4, fc="none", ec="0.5")
-polar_imshow(ax1, R)
-polar_imshow(zax, R)
-logpolar_frame(ax2, legend=True)
-logpolar_imshow(ax2, SCv)
+        # Lateral weights
+        # DoG
+        # K = A_e*gaussian((2*n+1,2*n+1), sigma_e) - A_i*gaussian((2*n+1,2*n+1), sigma_i)
+        # Constant inhibition
+        K = A_e*gaussian((2*n+1,2*n+1), sigma_e) - A_i #*gaussian((2*n+1,2*n+1), sigma_i)
 
-plt.show()
+        # FFT for lateral weights
+        K_shape = np.array(K.shape)
+        self.fft_shape = np.array(best_fft_shape(colliculus_shape+K_shape//2))
+        self.K_fft = rfft2(K,self.fft_shape)
+        i0,j0 = K.shape[0]//2, K.shape[1]//2
+        i1,j1 = i0+colliculus_shape[0], j0+colliculus_shape[1]
+        self.K_indices = i0,i1,j0,j1
+
+    def reset(self):
+        self.R[...] = 0
+        self.SC_U[...] = 0
+        self.SC_V[...] = 0
+
+
+    def run(self, duration=duration, dt=dt):
+        # Set some input
+        # R = np.maximum( stimulus((5.0,-25.0)), stimulus((5.0,25.0)) )
+        # R = stimulus((15.0,0.0))
+
+        # Project retina to input
+        I_high = self.R[self.P[...,0], self.P[...,1]]
+        I = zoom(I_high, colliculus_shape/projection_shape)
+        I += np.random.uniform(-noise/2,+noise/2,I.shape)
+
+        s = self.fft_shape
+        i0,i1,j0,j1 = self.K_indices
+
+        for i in range( int(duration/dt) ):
+            L = (irfft2(rfft2(self.SC_V,s)*self.K_fft, s)).real[i0:i1,j0:j1]
+            self.SC_U += dt/self.tau*(-self.SC_U + (self.scale*L + I)/self.alpha)
+            self.SC_V = np.minimum(np.maximum(0,self.SC_U),1)

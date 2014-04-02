@@ -43,9 +43,6 @@ if __name__ == '__main__':
     from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
     from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
-    P = retina_to_colliculus( (4*1024,4*512), (512,512) )
-
-
     fig = plt.figure(figsize=(10,8), facecolor='w')
     ax1, ax2 = ImageGrid(fig, 111, nrows_ncols=(1,2), axes_pad=0.5)
     radius = 0.01

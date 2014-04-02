@@ -30,6 +30,10 @@
 # -----------------------------------------------------------------------------
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import ImageGrid
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
+
 from projections import *
 
 # -----------------------------------------------------------------------------
@@ -154,6 +158,8 @@ def logpolar_frame(ax, title=None, legend=False):
 def polar_imshow(axis, Z, *args, **kwargs):
     kwargs['interpolation'] = kwargs.get('interpolation', 'nearest')
     kwargs['cmap'] = kwargs.get('cmap', plt.cm.gray_r)
+    #kwargs['vmin'] = kwargs.get('vmin', Z.min())
+    #kwargs['vmax'] = kwargs.get('vmax', Z.max())
     kwargs['vmin'] = kwargs.get('vmin', 0)
     kwargs['vmax'] = kwargs.get('vmax', 1)
     kwargs['origin'] = kwargs.get('origin', 'lower')
@@ -165,6 +171,8 @@ def polar_imshow(axis, Z, *args, **kwargs):
 def logpolar_imshow(axis, Z, *args, **kwargs):
     kwargs['interpolation'] = kwargs.get('interpolation', 'nearest')
     kwargs['cmap'] = kwargs.get('cmap', plt.cm.gray_r)
+    #kwargs['vmin'] = kwargs.get('vmin', Z.min())
+    #kwargs['vmax'] = kwargs.get('vmax', Z.max())
     kwargs['vmin'] = kwargs.get('vmin', 0)
     kwargs['vmax'] = kwargs.get('vmax', 1)
     kwargs['origin'] = kwargs.get('origin', 'lower')
