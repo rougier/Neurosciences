@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
 # Copyright INRIA
@@ -28,48 +29,48 @@
 # The fact that you are presently reading this means that you have had
 # knowledge of the CeCILL license and that you accept its terms.
 # -----------------------------------------------------------------------------
-import os
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import ImageGrid
 
-from helper import *
-from graphics import *
+from model import *
 from projections import *
 
 
-if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-    from matplotlib.patches import Polygon
-    from mpl_toolkits.axes_grid1 import ImageGrid
-    from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
-    from mpl_toolkits.axes_grid1.inset_locator import mark_inset
+model = Model()
 
-    P = retina_projection()
+p = 200
+# WARNING: 0 or 1
+X = np.linspace(0,25,p)
+Z = np.zeros(shape=(p, colliculus_shape[1]))
 
-    # Checkerboard pattern for retina
-    grid = 2*32
-    even = grid / 2 * [0, 1]
-    odd = grid / 2 * [1, 0]
-    R = np.row_stack(grid / 2 * (even, odd))
-    R = R.repeat(grid, axis=0).repeat(grid, axis=1)
+# size = 2.0 °, intensity = 0.5
+if 0 or not os.path.exists('tuning.npy'):
+     for i in range(p):
+         model.reset()
+         model.R = stimulus((X[i], 0.0), size=2.0, intensity=0.5)
+         model.run(duration=20*second, dt=5*millisecond, epsilon=0.001)
+         Z[i] = model.SC_V[colliculus_shape[0]/2]
+         print "%d/%d: %f" %  (i,p, Z[i].max())
+     np.save('tuning.npy', Z)
+else:
+    Z = np.load('tuning.npy')
 
-    # Mask with a disc
-    R = R* disc((retina_shape[0],retina_shape[0]),
-                (retina_shape[0]//2,retina_shape[0]//2),
-                retina_shape[0]//2)
+fig = plt.figure(figsize=(10,5), facecolor='w')
+for i in [3,5,10,15]:
+    x,y = polar_to_logpolar( i/90.0, 0 )
+    index = int(x*Z.shape[1])
+    plt.plot(X,Z[:,index], linewidth=1.5, color='k')
+    # plt.plot(X_ideal,Z_ideal[:,index], '--', linewidth=1.5, color='.5')
 
-    # Take half-retina
-    R = R[:,retina_shape[1]:]
-
-    # Project to colliculus
-    SC = R[P[...,0], P[...,1]]
-
-
-    fig = plt.figure(figsize=(10,8), facecolor='w')
-    ax1, ax2 = ImageGrid(fig, 111, nrows_ncols=(1,2), axes_pad=0.5)
-    polar_frame(ax1, legend=True)
-    polar_imshow(ax1, R, vmin=0, vmax=5)
-    logpolar_frame(ax2, legend=True)
-    logpolar_imshow(ax2, SC, vmin=0, vmax=5)
-
-#    plt.savefig("fig-checkerboard.pdf")
-    plt.show()
+plt.xlim(0.0, 25.0)
+plt.ylim(0.0,  1.1)
+plt.yticks([0.0,0.8,1.0],['0','400','500'])
+plt.vlines([3,5,10,15], [0,0,0,0], [1.1,1.1,1.1,1.1],  linewidth=1, color='.75')
+plt.xticks([3,5,10,25])
+#plt.grid()
+plt.xlabel('Target eccentricity ($^\circ$)')
+plt.ylabel('Discharge rate (spike/s)')
+plt.savefig('tuning-curves.pdf')
+plt.show()

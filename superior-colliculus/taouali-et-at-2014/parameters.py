@@ -39,14 +39,14 @@ noise        = 0.05
 
 retina_shape     = np.array([4096,2048]).astype(float)
 projection_shape = np.array([512,512]).astype(float)
-n = 2*64
+n = 128
 colliculus_shape = np.array([n,n]).astype(float)
 
 # Default stimulus
-stimulus_size      = 1.5 # in degrees
-stimulus_intensity = 1.5
+stimulus_size      = 2.0 # in degrees
+stimulus_intensity = 0.5
 
-# DNF parameters
+# DNF parameters (linear)
 sigma_e  = 0.10
 A_e      = 1.30
 sigma_i  = 1.00

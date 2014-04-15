@@ -65,7 +65,7 @@ def stimulus(position,
     # For a gaussian of type:
     # f(x) = a * exp( - (x-b)**2 / (2*c*c)) + d
     #
-    # Full with at half maximum (FWHM) = 2sqrt(2ln2)*c = 2.35482 * c
+    # Full width at half maximum (FWHM) = 2sqrt(2ln2)*c = 2.35482 * c
     # -> FWHM = size = 2.35482 * c
     #
     c = size/2.35482

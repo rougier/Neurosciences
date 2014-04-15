@@ -68,5 +68,5 @@ if __name__ == '__main__':
     SC = R[P[...,0], P[...,1]]
     logpolar_imshow(ax2, SC)
 
-    plt.savefig("fig-stimuli.pdf")
+    # plt.savefig("fig-input.pdf")
     plt.show()

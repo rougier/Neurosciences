@@ -54,6 +54,16 @@ class Model:
         # Projection from retina to colliculus
         self.P = retina_projection()
 
+        # Retina mask
+        D = disc((retina_shape[0],retina_shape[0]),
+                 (retina_shape[0]//2,retina_shape[0]//2),
+                 retina_shape[0]//2)
+        self.R_mask = D[:,retina_shape[1]:]
+
+        # Colliculus mask
+        self.SC_mask = self.R_mask[self.P[...,0], self.P[...,1]]
+        self.SC_mask = zoom(self.SC_mask, colliculus_shape/projection_shape)
+
         # Parameters
         self.sigma_e  = sigma_e
         self.A_e      = A_e
@@ -68,7 +78,7 @@ class Model:
         # DoG
         # K = A_e*gaussian((2*n+1,2*n+1), sigma_e) - A_i*gaussian((2*n+1,2*n+1), sigma_i)
         # Constant inhibition
-        K = A_e*gaussian((2*n+1,2*n+1), sigma_e) - A_i #*gaussian((2*n+1,2*n+1), sigma_i)
+        K = A_e*gaussian((2*n+1,2*n+1), sigma_e) - A_i
 
         # FFT for lateral weights
         K_shape = np.array(K.shape)
@@ -78,13 +88,18 @@ class Model:
         i1,j1 = i0+colliculus_shape[0], j0+colliculus_shape[1]
         self.K_indices = i0,i1,j0,j1
 
+    def sigmoid(self, x):
+        ''' Sigmoid function of the form 1/(1+exp(-x)) '''
+        #return 1.0/(1.0+np.exp(2-4*x))
+        return 1.0/(1.0+np.exp(1-5*x))
+
     def reset(self):
         self.R[...] = 0
         self.SC_U[...] = 0
         self.SC_V[...] = 0
 
 
-    def run(self, duration=duration, dt=dt):
+    def run(self, duration=duration, dt=dt, epsilon=0.01):
         # Set some input
         # R = np.maximum( stimulus((5.0,-25.0)), stimulus((5.0,25.0)) )
         # R = stimulus((15.0,0.0))
@@ -93,11 +108,19 @@ class Model:
         I_high = self.R[self.P[...,0], self.P[...,1]]
         I = zoom(I_high, colliculus_shape/projection_shape)
         I += np.random.uniform(-noise/2,+noise/2,I.shape)
+        self.I = I
 
         s = self.fft_shape
         i0,i1,j0,j1 = self.K_indices
 
         for i in range( int(duration/dt) ):
             L = (irfft2(rfft2(self.SC_V,s)*self.K_fft, s)).real[i0:i1,j0:j1]
-            self.SC_U += dt/self.tau*(-self.SC_U + (self.scale*L + I)/self.alpha)
+            dU = dt/self.tau*(-self.SC_U + (self.scale*L + I)/self.alpha)
+            self.SC_U += dU
+            # self.SC_V = self.sigmoid(self.SC_U)
+            #self.SC_V = np.maximum(0,self.SC_U)
             self.SC_V = np.minimum(np.maximum(0,self.SC_U),1)
+            if np.abs(dU).sum() < epsilon:
+                break
+        self.SC_V *= self.SC_mask
+        self.SC_U *= self.SC_mask
