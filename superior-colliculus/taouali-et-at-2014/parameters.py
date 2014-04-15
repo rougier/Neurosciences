@@ -43,8 +43,8 @@ n = 128
 colliculus_shape = np.array([n,n]).astype(float)
 
 # Default stimulus
-stimulus_size      = 2.0 # in degrees
-stimulus_intensity = 0.5
+stimulus_size      = 1.5 # in degrees
+stimulus_intensity = 1.5
 
 # DNF parameters (linear)
 sigma_e  = 0.10
