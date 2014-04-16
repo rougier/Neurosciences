@@ -73,6 +73,7 @@ class Model:
         self.tau      = tau
         self.scale    = scale
         self.noise    = noise
+        self.lesion   = None
 
         # Lateral weights
         # DoG
@@ -98,6 +99,19 @@ class Model:
         self.SC_U[...] = 0
         self.SC_V[...] = 0
 
+    def make_lesion(self, lesion = None):
+        if lesion is not None:
+            position,size = lesion
+            rho,theta = position
+            rho,theta = rho/90.0, np.pi*theta/180.0
+            x,y = polar_to_logpolar(rho,theta)
+            x = int(x*colliculus_shape[0])
+            y = int(y*colliculus_shape[1])
+            radius = ((0.5*size/90.0)*colliculus_shape[0])
+            self.lesion = disc(colliculus_shape, center = (y,x), radius=radius)
+        else:
+            self.lesion = None
+
 
     def run(self, duration=duration, dt=dt, epsilon=0.01):
         # Set some input
@@ -117,10 +131,11 @@ class Model:
             L = (irfft2(rfft2(self.SC_V,s)*self.K_fft, s)).real[i0:i1,j0:j1]
             dU = dt/self.tau*(-self.SC_U + (self.scale*L + I)/self.alpha)
             self.SC_U += dU
-            # self.SC_V = self.sigmoid(self.SC_U)
-            #self.SC_V = np.maximum(0,self.SC_U)
+            if self.lesion is not None:
+                self.SC_U *= (1-self.lesion)
             self.SC_V = np.minimum(np.maximum(0,self.SC_U),1)
             if np.abs(dU).sum() < epsilon:
                 break
+
         self.SC_V *= self.SC_mask
         self.SC_U *= self.SC_mask
