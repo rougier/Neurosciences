@@ -41,7 +41,6 @@ from projections import *
 model = Model()
 
 p = 200
-# WARNING: 0 or 1
 X = np.linspace(0,25,p)
 Z = np.zeros(shape=(p, colliculus_shape[1]))
 
@@ -57,20 +56,28 @@ if 0 or not os.path.exists('tuning.npy'):
 else:
     Z = np.load('tuning.npy')
 
-fig = plt.figure(figsize=(10,5), facecolor='w')
+fig = plt.figure(figsize=(15,5), facecolor='w')
+ax = plt.subplot(1,1,1)
+ax.tick_params(direction="outward")
+ax.spines['right'].set_color('none')
+ax.spines['top'].set_color('none')
+# ax.spines['left'].set_color('none')
+ax.spines['bottom'].set_color('none')
+ax.xaxis.set_ticks_position('bottom')
+ax.yaxis.set_ticks_position('left')
+# ax.spines['bottom'].set_position(('data',-0.05))
+
 for i in [3,5,10,15]:
     x,y = polar_to_logpolar( i/90.0, 0 )
     index = int(x*Z.shape[1])
     plt.plot(X,Z[:,index], linewidth=1.5, color='k')
-    # plt.plot(X_ideal,Z_ideal[:,index], '--', linewidth=1.5, color='.5')
 
 plt.xlim(0.0, 25.0)
 plt.ylim(0.0,  1.1)
-plt.yticks([0.0,0.8,1.0],['0','400','500'])
-plt.vlines([3,5,10,15], [0,0,0,0], [1.1,1.1,1.1,1.1],  linewidth=1, color='.75')
-plt.xticks([3,5,10,25])
-#plt.grid()
+plt.yticks([0.0,1.0],['0','500'])
+#plt.vlines([3,5,10,15], [0,0,0,0], [1.1,1.1,1.1,1.1],  linewidth=1, color='.75')
+plt.xticks([0,3,5,10,15,25])
 plt.xlabel('Target eccentricity ($^\circ$)')
 plt.ylabel('Discharge rate (spike/s)')
-plt.savefig('tuning-curves.pdf')
+plt.savefig('fig-tuning-curves.pdf')
 plt.show()
