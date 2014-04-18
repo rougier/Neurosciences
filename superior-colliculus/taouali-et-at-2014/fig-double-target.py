@@ -112,10 +112,10 @@ else:
 
 fig = plt.figure(figsize=(20,7))
 fig.patch.set_color('w')
-G = gridspec.GridSpec(2, 5)
+G = gridspec.GridSpec(2, 7)
 
 ax1 = plt.subplot(G[0, 0])
-ax2 = plt.subplot(G[0, 1])
+ax2 = plt.subplot(G[0, 1:3])
 model = Model()
 model.R = np.maximum( stimulus((5, -10), size=1, intensity=1) ,
                       stimulus((5, +10), size=1, intensity=1) )
@@ -141,8 +141,8 @@ ax1.text(-0.05, 1.0, 'A', va='top', ha='right',
          transform=ax1.transAxes, fontsize=20, fontweight='bold')
 
 
-ax1 = plt.subplot(G[1, 0])
-ax2 = plt.subplot(G[1, 1])
+ax1 = plt.subplot(G[1,0])
+ax2 = plt.subplot(G[1,1:3])
 model = Model()
 model.R = np.maximum( stimulus((5, -25), size=1, intensity=1) ,
                       stimulus((5, +25), size=1, intensity=1) )
@@ -166,7 +166,7 @@ logpolar_imshow(ax2, model.SC_V)
 ax1.text(-0.05, 1.0, 'B', va='top', ha='right',
          transform=ax1.transAxes, fontsize=20, fontweight='bold')
 
-ax = plt.subplot(G[:, 2:])
+ax = plt.subplot(G[:, 3:])
 X = np.linspace(20,90,p)
 Y = T5[:,1]
 plt.scatter( X, Y, s=50, color="g", edgecolor="g", alpha=.25)
@@ -180,7 +180,7 @@ plt.xlim(18,92)
 plt.ylim(-0.5,+0.5)
 
 plt.xlabel(u"Relative distance between targets (degrees)")
-plt.xlabel(u"Normalized y position")
+plt.ylabel(u"Normalized y position")
 
 plt.text(20, 0, 'A',
          ha="center", va="center", size=15, fontweight='bold',
@@ -190,5 +190,5 @@ plt.text(50, +.2, 'B',
          ha="center", va="center", size=15, fontweight='bold',
          bbox=dict(boxstyle='round', fc="w", ec="k"))
 
-plt.savefig("double-target.pdf")
+plt.savefig("fig-double-target.pdf")
 plt.show()
