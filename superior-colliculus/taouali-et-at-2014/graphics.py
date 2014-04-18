@@ -37,7 +37,7 @@ from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
 from projections import *
 
 # -----------------------------------------------------------------------------
-def polar_frame(ax, title=None, legend=False, zoom=False):
+def polar_frame(ax, title=None, legend=False, zoom=False, labels=True):
     """ Draw a polar frame """
 
     for rho in [0, 2,5,10,20,40,60,80,90]:
@@ -51,7 +51,7 @@ def polar_frame(ax, title=None, legend=False, zoom=False):
         X,Y = polar_to_cartesian(R,T)
         ax.plot(X, Y-1/2, color=color, lw=lw, alpha=alpha)
 
-        if not zoom and rho in [0,10,20,40,80]:
+        if not zoom and rho in [0,10,20,40,80] and labels:
             ax.text(X[-1]*1.0-0.075, Y[-1],u'%d°' % rho, color='k', # size=15,
                     horizontalalignment='center', verticalalignment='center')
 
@@ -67,7 +67,7 @@ def polar_frame(ax, title=None, legend=False, zoom=False):
         X,Y = polar_to_cartesian(R,T)
         ax.plot(X, Y, color=color, lw=lw, alpha=alpha)
 
-        if not zoom and theta in [-90,-60,-30,+30,+60,+90]:
+        if not zoom and theta in [-90,-60,-30,+30,+60,+90] and labels:
             ax.text(X[-1]*1.05, Y[-1]*1.05,u'%d°' % theta, color='k', # size=15,
                     horizontalalignment='left', verticalalignment='center')
     d = 0.01
@@ -96,7 +96,7 @@ def polar_frame(ax, title=None, legend=False, zoom=False):
 
 
 # -----------------------------------------------------------------------------
-def logpolar_frame(ax, title=None, legend=False):
+def logpolar_frame(ax, title=None, legend=False, labels=True):
     """ Draw a log polar frame """
 
     for rho in [2,5,10,20,40,60,80,90]:
@@ -110,7 +110,7 @@ def logpolar_frame(ax, title=None, legend=False):
         X,Y = polar_to_logpolar(R,T)
         X,Y = X*2, 2*Y-1
         ax.plot(X, Y, color=color, lw=lw, alpha=alpha)
-        if rho in [2,5,10,20,40,80]:
+        if labels and rho in [2,5,10,20,40,80]:
             ax.text(X[-1], Y[-1]+0.05, u'%d°' % rho, color='k', # size=15,
                       horizontalalignment='right',  verticalalignment='bottom')
 
@@ -126,8 +126,9 @@ def logpolar_frame(ax, title=None, legend=False):
         X,Y = polar_to_logpolar(R,T)
         X,Y = X*2, 2*Y-1
         ax.plot(X,Y, color=color, lw=lw, alpha=alpha)
-        ax.text(X[-1]*1.0+.05, Y[-1]*1.0,u'%d°' % theta, color='k', # size=15,
-                 horizontalalignment='left', verticalalignment='center')
+        if labels:
+            ax.text(X[-1]*1.0+.05, Y[-1]*1.0,u'%d°' % theta, color='k', # size=15,
+                    horizontalalignment='left', verticalalignment='center')
 
     d = 0.01
     ax.set_xlim( 0.0-d, 2.0+d)

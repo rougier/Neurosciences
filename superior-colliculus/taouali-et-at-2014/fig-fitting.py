@@ -30,27 +30,57 @@
 # knowledge of the CeCILL license and that you accept its terms.
 # -----------------------------------------------------------------------------
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import ImageGrid
 
-second       = 1.0
-millisecond  = 0.001
-dt           = 5*millisecond
-duration     = 10*second
-noise        = 0.01
+from model import *
+from graphics import *
+from parameters import *
+from projections import *
 
-retina_shape     = np.array([4096,2048]).astype(float)
-projection_shape = np.array([512,512]).astype(float)
-n = 128
-colliculus_shape = np.array([n,n]).astype(float)
+n = 200
+Rho = np.linspace(0,25,n)
+print Rho
 
-# Default stimulus
-stimulus_size      = 1.5 # in degrees
-stimulus_intensity = 1.5
+Z = np.zeros(shape=(n, colliculus_shape[1]))
+shape = colliculus_shape
 
-# DNF parameters (linear)
-sigma_e  = 0.10
-A_e      = 1.30
-sigma_i  = 1.00
-A_i      = 0.65
-alpha    = 12.5
-tau      = 10*millisecond
-scale    = 40.0*40.0/(n*n)
+for i in range(len(Rho)):
+     x,y = polar_to_logpolar(Rho[i]/90.0,0)
+     x *= 90
+     y *= 90
+     Y,X = np.mgrid[0:shape[1],0:shape[0]]
+     X = X / float(shape[0]) * 90
+     Y = Y / float(shape[1]) * 90
+     R = ((X-x)**2+(Y-y)**2)
+     c = 20*stimulus_size/2.35482
+     SC_V = np.exp(-R/(2*c*c))
+     Z[i] = SC_V[colliculus_shape[0]/2]
+
+     if x in [3,5,10,15]:
+          model = Model()
+          SC_V *= self.SV_mask
+          ax = plt.subplot(111)
+          logpolar_frame(ax)
+          logpolar_imshow(ax, SC_V)
+          plt.show()
+
+fig = plt.figure(figsize=(10,5), facecolor='w')
+for i in [3,5,10,15]:
+    x,y = polar_to_logpolar( i/90.0, 0 )
+    index = int(x*Z.shape[1])
+    plt.plot(Rho,Z[:,index], linewidth=2) #, color='k')
+    # plt.plot(X_ideal,Z_ideal[:,index], '--', linewidth=1.5, color='.5')
+
+#plt.xlim(0.0, 25.0)
+#plt.ylim(0.0,  1.1)
+#plt.yticks([0.0,0.8,1.0],['0','400','500'])
+#plt.vlines([5,10,15], [0,0,0], [1.1,1.1,1.1],  linewidth=1, color='.75')
+#plt.xticks([2.5,10,25])
+#plt.xlim(0,60)
+#plt.grid()
+#plt.xlabel('Target eccentricity ($^\circ$)')
+#plt.ylabel('Discharge rate (spike/s)')
+# # plt.savefig('tuning-curves.pdf')
+plt.show()

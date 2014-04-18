@@ -121,8 +121,10 @@ class Model:
         # Project retina to input
         I_high = self.R[self.P[...,0], self.P[...,1]]
         I = zoom(I_high, colliculus_shape/projection_shape)
-        I += np.random.uniform(-noise/2,+noise/2,I.shape)
-        self.I = I
+
+        # White noise in the input
+        # I += np.random.uniform(-noise/2,+noise/2,I.shape)
+        self.I = I * (1+np.random.normal(0, 5*noise, I.shape))
 
         s = self.fft_shape
         i0,i1,j0,j1 = self.K_indices
@@ -131,11 +133,16 @@ class Model:
             L = (irfft2(rfft2(self.SC_V,s)*self.K_fft, s)).real[i0:i1,j0:j1]
             dU = dt/self.tau*(-self.SC_U + (self.scale*L + I)/self.alpha)
             self.SC_U += dU
+
             if self.lesion is not None:
                 self.SC_U *= (1-self.lesion)
             self.SC_V = np.minimum(np.maximum(0,self.SC_U),1)
             if np.abs(dU).sum() < epsilon:
                 break
+
+            # Correlated Gaussian noise
+            self.SC_V = self.SC_V * (1+np.random.normal(0,noise,self.SC_V.shape))
+            # self.SC_V *= self.SC_mask
 
         self.SC_V *= self.SC_mask
         self.SC_U *= self.SC_mask

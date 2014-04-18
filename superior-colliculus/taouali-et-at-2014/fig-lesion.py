@@ -151,10 +151,14 @@ if 1:
     # Intact model
     ax = plt.subplot(G[0, 0], aspect=1)
     run(ax, None, "None", "Intact model")
+    ax.text(0.0, 1.0, 'A', va='top', ha='right',
+            transform=ax.transAxes, fontsize=20, fontweight='bold')
 
     # Lesioned model
     ax = plt.subplot(G[1, 0], aspect=1)
     run(ax, [(5,0),12], "(5,0)", "Lesioned model")
+    ax.text(0.0, 1.0, 'B', va='top', ha='right',
+            transform=ax.transAxes, fontsize=20, fontweight='bold')
 
     red  = (1,.25,.25)
     blue = (.25,.25,1)
@@ -200,6 +204,8 @@ if 1:
                   xy=(5, 0), xycoords='data',
                   xytext=(5, -2.5), textcoords='data', ha='center',
                   arrowprops=dict(arrowstyle="->", color="k"))
+    ax.text(0.0, 1.0, 'C', va='top', ha='right',
+            transform=ax.transAxes, fontsize=20, fontweight='bold')
 
 
     #  Vertical errors
@@ -243,37 +249,8 @@ if 1:
                   xy=(0, 0), xycoords='data',
                   xytext=(0, -2.5), textcoords='data', ha='center',
                   arrowprops=dict(arrowstyle="->", color="k"))
-
-    # # Lesioned model
-    # S = np.load('lesion-(5,0).npy').reshape(11,7,4)
-
-    # D = np.sqrt( (S[...,2]-S[...,0])**2 +  (S[...,3]-S[...,1])**2)
-    # X = np.array(targets_rho)
-    # M = np.mean(D, axis=1) * 100
-    # E = np.std(D,axis=1) * 100
-    # ax1.bar(X, M, .45, color='r', ecolor='r', yerr=E, label='Lesioned model')
-
-
-    # X = np.array(targets_theta)
-    # M = np.mean(D, axis=0) * 100
-    # E = np.std(D, axis=0) * 100
-    # ax2.bar(X, M, 4.5,  color='r', ecolor='r', yerr=E, label='Lesioned model')
-
-    # ax1.legend(frameon=False)
-    # ax2.legend(frameon=False)
-
-    # ax2.annotate("Lesion site",
-    #              xy=(0, 0), xycoords='data',
-    #              xytext=(0, -2.5), textcoords='data', ha='center',
-    #              arrowprops=dict(arrowstyle="->", color="k"))
-
-    # ax1.set_title("Mean encoding error along rosto-caudal axis")
-    # ax1.set_ylabel("Mean encoding error (%)")
-    # #ax1.set_xlabel(r"$\rho$ coordinate")
-
-    # ax2.set_title("Mean encoding error along vertical axis")
-    # ax2.set_ylabel("Mean encoding error (%)")
-    # #ax2.set_xlabel(r"$\phi$ coordinate")
+    ax.text(0.0, 1.0, 'D', va='top', ha='right',
+            transform=ax.transAxes, fontsize=20, fontweight='bold')
 
     plt.savefig("fig-lesion.pdf")
     plt.show()
