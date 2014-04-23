@@ -129,7 +129,12 @@ class Model:
         s = self.fft_shape
         i0,i1,j0,j1 = self.K_indices
 
+        Z = np.zeros((int(duration/dt), self.SC_V.shape[0], self.SC_V.shape[1]))
+
         for i in range( int(duration/dt) ):
+
+            Z[i] = self.SC_V
+
             L = (irfft2(rfft2(self.SC_V,s)*self.K_fft, s)).real[i0:i1,j0:j1]
             dU = dt/self.tau*(-self.SC_U + (self.scale*L + I)/self.alpha)
             self.SC_U += dU
@@ -144,5 +149,8 @@ class Model:
             self.SC_V = self.SC_V * (1+np.random.normal(0,noise,self.SC_V.shape))
             # self.SC_V *= self.SC_mask
 
+
         self.SC_V *= self.SC_mask
         self.SC_U *= self.SC_mask
+
+        return Z

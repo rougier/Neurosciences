@@ -58,7 +58,7 @@ np.random.seed(123)
 if os.path.exists('double-target-5.npy'):
     T5 = np.load('double-target-5.npy')
 else:
-    rho = 15
+    rho = 5
     model= Model()
     T5 = np.zeros((p,2))
     for i,theta in enumerate(np.linspace(10,45,p)):
@@ -67,7 +67,7 @@ else:
                               stimulus((rho, +theta), size=1, intensity=1) )
         model.R += np.random.uniform(0,0.05,model.R.shape)
 
-        model.run(duration=10*second, dt=5*millisecond, epsilon=0.0)
+        model.run(duration=5*second, dt=5*millisecond, epsilon=0.0)
         x,y = decode(model.SC_V)
         print u"Δθ = %.2f: (%f,%f)" % (2*theta, x, y)
         T5[i] = x,y
@@ -85,7 +85,7 @@ else:
                               stimulus((rho, +theta), size=1, intensity=1) )
         model.R += np.random.uniform(0,0.05,model.R.shape)
 
-        model.run(duration=10*second, dt=5*millisecond, epsilon=0.0)
+        model.run(duration=5*second, dt=5*millisecond, epsilon=0.0)
         x,y = decode(model.SC_V)
         print u"Δθ = %.2f: (%f,%f)" % (2*theta, x, y)
         T10[i] = x,y
@@ -103,7 +103,7 @@ else:
                               stimulus((rho, +theta), size=1, intensity=1) )
         model.R += np.random.uniform(0,0.05,model.R.shape)
 
-        model.run(duration=10*second, dt=5*millisecond, epsilon=0.0)
+        model.run(duration=5*second, dt=5*millisecond, epsilon=0.0)
         x,y = decode(model.SC_V)
         print u"Δθ = %.2f: (%f,%f)" % (2*theta, x, y)
         T15[i] = x,y
@@ -174,14 +174,15 @@ Y = T10[:,1]
 plt.scatter( X, Y, s=50, color="b", edgecolor="b", alpha=.25)
 Y = T15[:,1]
 plt.scatter( X, Y, s=50, color="r", edgecolor="r", alpha=.25)
-plt.axvline(39, color='.75')
-plt.axvline(42, color='.75')
+plt.axvline(40, color='r')
+plt.axvline(41, color='b')
+plt.axvline(47, color='g')
 plt.xlim(18,92)
 plt.ylim(-0.5,+0.5)
 
 plt.xlabel(u"Relative distance between targets (degrees)")
 plt.ylabel(u"Normalized y position")
-
+ax.grid(b=False)
 plt.text(20, 0, 'A',
          ha="center", va="center", size=15, fontweight='bold',
          bbox=dict(boxstyle='round', fc="w", ec="k"))
