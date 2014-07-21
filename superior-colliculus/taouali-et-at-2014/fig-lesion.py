@@ -185,7 +185,7 @@ if 1:
     M = np.mean(D, axis=1) * 100
     E = np.std(D,axis=1) * 100
     c = (1,.75,.75)
-    ax.bar(X, M, .5, yerr=E, label='Intact model', color=red, edgecolor='w', ecolor=red)
+    ax.bar(X, M, .5, yerr=E, label='Lesioned model', color=red, edgecolor='w', ecolor=red)
 
     plt.ylim(0,25)
     plt.xlim(0,21)
@@ -229,7 +229,7 @@ if 1:
     X = np.array(targets_theta)
     M = np.mean(D, axis=0) * 100
     E = np.std(D, axis=0) * 100
-    ax.bar(X, M, 2.5, yerr=E, label='Intact model', color=red, edgecolor='w', ecolor=red)
+    ax.bar(X, M, 2.5, yerr=E, label='Lesioned model', color=red, edgecolor='w', ecolor=red)
 
 
     plt.xlim(-50,50)
