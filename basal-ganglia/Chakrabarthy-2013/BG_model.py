@@ -58,8 +58,8 @@ theta_STN = 0.1
 
 
 # Compute of parameters
-lamda_D1 = 5*(1/1+np.exp(-6*(delta - theta_D1)))
-lamda_D2 = 5*(1/1+np.exp(-6*(theta_D2 - delta)))
+lamda_D1 = 5*(1/(1+np.exp(-6*(delta - theta_D1))))
+lamda_D2 = 5*(1/(1+np.exp(-6*(theta_D2 - delta))))
 lamda_GPe = 4 * H(theta_GPe - delta) + 1;  
 lamda_STN = 4 * H(theta_STN - delta) + 1
 
