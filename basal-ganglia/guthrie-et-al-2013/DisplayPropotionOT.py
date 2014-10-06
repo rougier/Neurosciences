@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
 from scipy.optimize import curve_fit
 
 def fitFunc(t, a, b, c):
@@ -20,9 +19,9 @@ yticks = np.linspace(0,1,11)
 axes.set_xbound(0,120)
 axes.set_ybound(0,1)
 axes.set_yticks(yticks)
-axes.plot(trials, Optimum_trials, "o")
-axes.plot(trials, fitFunc(trials, fitParams[0], fitParams[1], fitParams[2]), "r", linewidth = 3)
-plt.ylabel("Proportion of optimum trials")
-plt.xlabel("Trial number")
+axes.plot(trials, Optimum_trials)
+axes.plot(trials, fitFunc(trials, fitParams[0], fitParams[1], fitParams[2]), "r")
+plt.ylabel("Proportion of optimum trials", fontweight='bold')
+plt.xlabel("Trial number", fontweight='bold')
 fig.savefig("PropotionOfOptimumTrials.pdf")
 plt.show()
