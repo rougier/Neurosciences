@@ -21,7 +21,7 @@ duration = 3.0*second
 dt = 1.0*millisecond
 
 # Initialization of the random generator (reproductibility !)
-np.random.seed(1)
+# np.random.seed(1)
 
 # Sigmoid parameter
 Vmin       =  0.0
@@ -70,10 +70,10 @@ def init_weights(L, gain=1):
 
 # Populations
 # -----------------------------------------------------------------------------
-Cortex_cog   = zeros((n,1), """dV/dt = (-V + I + Iext - Cortex_h)/Cortex_tau;
-                               U = noise(V,Cortex_N); I; Iext""")
-Cortex_mot   = zeros((1,n), """dV/dt = (-V + I + Iext - Cortex_h)/Cortex_tau;
-                               U = noise(V,Cortex_N); I; Iext""")
+Cortex_cog   = zeros((n,1), """dV/dt = (-V + I + L + Iext - Cortex_h)/Cortex_tau;
+                               U = noise(V,Cortex_N); L; I; Iext""")
+Cortex_mot   = zeros((1,n), """dV/dt = (-V + I + L + Iext - Cortex_h)/Cortex_tau;
+                               U = noise(V,Cortex_N); L; I; Iext""")
 Cortex_ass   = zeros((n,n), """dV/dt = (-V + I + Iext - Cortex_h)/Cortex_tau;
                                U = noise(V,Cortex_N); I; Iext""")
 Striatum_cog = zeros((n,1), """dV/dt = (-V + I - Striatum_h)/Striatum_tau;
@@ -98,31 +98,48 @@ Thalamus_mot = zeros((1,n), """dV/dt = (-V + I - Thalamus_h)/Thalamus_tau;
 
 # Connectivity
 # -----------------------------------------------------------------------------
-L = DenseConnection( Cortex_cog('U'),   Striatum_cog('I'), 1.0)
-init_weights(L)
-L = DenseConnection( Cortex_mot('U'),   Striatum_mot('I'), 1.0)
-init_weights(L)
-L = DenseConnection( Cortex_ass('U'),   Striatum_ass('I'), 1.0)
-init_weights(L)
-L = DenseConnection( Cortex_cog('U'),   Striatum_ass('I'), np.ones((1,2*n+1)))
-init_weights(L,0.2)
-L = DenseConnection( Cortex_mot('U'),   Striatum_ass('I'), np.ones((2*n+1,1)))
-init_weights(L,0.2)
+if 1:
+    L = DenseConnection( Cortex_cog('U'),   Striatum_cog('I'), 1.0)
+    init_weights(L)
+    L = DenseConnection( Cortex_mot('U'),   Striatum_mot('I'), 1.0)
+    init_weights(L)
+    L = DenseConnection( Cortex_ass('U'),   Striatum_ass('I'), 1.0)
+    init_weights(L)
+    L = DenseConnection( Cortex_cog('U'),   Striatum_ass('I'), np.ones((1,2*n+1)))
+    init_weights(L,0.2)
+    L = DenseConnection( Cortex_mot('U'),   Striatum_ass('I'), np.ones((2*n+1,1)))
+    init_weights(L,0.2)
 
-DenseConnection( Cortex_cog('U'),   STN_cog('I'),       1.0 )
-DenseConnection( Cortex_mot('U'),   STN_mot('I'),       1.0 )
-DenseConnection( Striatum_cog('U'), GPi_cog('I'),      -2.0 )
-DenseConnection( Striatum_mot('U'), GPi_mot('I'),      -2.0 )
-DenseConnection( Striatum_ass('U'), GPi_cog('I'),      -2.0*np.ones((1,2*n+1)))
-DenseConnection( Striatum_ass('U'), GPi_mot('I'),      -2.0*np.ones((2*n+1,1)))
-DenseConnection( STN_cog('U'),      GPi_cog('I'),       1.0*np.ones((2*n+1,1)) )
-DenseConnection( STN_mot('U'),      GPi_mot('I'),       1.0*np.ones((1,2*n+1)) )
-DenseConnection( GPi_cog('U'),      Thalamus_cog('I'), -0.5 )
-DenseConnection( GPi_mot('U'),      Thalamus_mot('I'), -0.5 )
-DenseConnection( Thalamus_cog('U'), Cortex_cog('I'),    1.0 )
-DenseConnection( Thalamus_mot('U'), Cortex_mot('I'),    1.0 )
-DenseConnection( Cortex_cog('U'),   Thalamus_cog('I'),  0.4 )
-DenseConnection( Cortex_mot('U'),   Thalamus_mot('I'),  0.4 )
+    DenseConnection( Cortex_cog('U'),   STN_cog('I'),       1.0 )
+    DenseConnection( Cortex_mot('U'),   STN_mot('I'),       1.0 )
+    DenseConnection( Striatum_cog('U'), GPi_cog('I'),      -2.0 )
+    DenseConnection( Striatum_mot('U'), GPi_mot('I'),      -2.0 )
+    DenseConnection( Striatum_ass('U'), GPi_cog('I'),      -2.0*np.ones((1,2*n+1)))
+    DenseConnection( Striatum_ass('U'), GPi_mot('I'),      -2.0*np.ones((2*n+1,1)))
+    DenseConnection( STN_cog('U'),      GPi_cog('I'),       1.0*np.ones((2*n+1,1)) )
+    DenseConnection( STN_mot('U'),      GPi_mot('I'),       1.0*np.ones((1,2*n+1)) )
+    DenseConnection( GPi_cog('U'),      Thalamus_cog('I'), -0.5 )
+    DenseConnection( GPi_mot('U'),      Thalamus_mot('I'), -0.5 )
+    if 0:
+        DenseConnection( Thalamus_cog('U'), Cortex_cog('I'),    1.0 )
+        DenseConnection( Thalamus_mot('U'), Cortex_mot('I'),    1.0 )
+        DenseConnection( Cortex_cog('U'),   Thalamus_cog('I'),  0.4 )
+        DenseConnection( Cortex_mot('U'),   Thalamus_mot('I'),  0.4 )
+
+if 1:
+    DenseConnection( Thalamus_cog('U'), Cortex_cog('I'),    0.4 )
+    DenseConnection( Thalamus_mot('U'), Cortex_mot('I'),    0.4 )
+    DenseConnection( Cortex_cog('U'),   Thalamus_cog('I'),  0.15 )
+    DenseConnection( Cortex_mot('U'),   Thalamus_mot('I'),  0.15 )
+
+    Z = -np.ones((2*n+1,1)) * 0.35
+    Z[n,0] = +0.5
+    DenseConnection( Cortex_cog('U'), Cortex_cog('L'),Z)
+    Z = -np.ones((1,2*n+1)) * 0.35
+    Z[0,n] = +0.5
+    DenseConnection( Cortex_mot('U'), Cortex_mot('L'),Z)
+
+
 
 # Trial setup
 # -----------------------------------------------------------------------------
@@ -211,7 +228,7 @@ if 1:
     plt.ylabel("Activity (Hz)")
     plt.legend(frameon=False, loc='upper left')
     plt.xlim(0.0,duration)
-    plt.ylim(0.0,60.0)
+    plt.ylim(-5.0,60.0)
 
     plt.xticks([0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0],
                ['0.0','0.5\n(Trial start)','1.0','1.5', '2.0','2.5\n(Trial stop)','3.0'])
