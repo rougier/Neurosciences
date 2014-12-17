@@ -1,10 +1,20 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # -----------------------------------------------------------------------------
-# Copyright (c) 2014, Nicolas P. Rougier
+# Copyright (c) 2014, Nicolas P. Rougier, Meropi Topalidou
 # Distributed under the (new) BSD License.
 #
 # Contributors: Nicolas P. Rougier (Nicolas.Rougier@inria.fr)
 #               Meropi Topalidou (Meropi.Topalidou@inria.fr)
+# -----------------------------------------------------------------------------
+# References:
+#
+# * Interaction between cognitive and motor cortico-basal ganglia loops during
+#   decision making: a computational study. M. Guthrie, A. Leblois, A. Garenne,
+#   and T. Boraud. Journal of Neurophysiology, 109:3025–3040, 2013.
+#
+# * A long Journey into Reproducible Computational Neurosciences (submitted)
+#   Meropi Topalidou, Arthur Leblois, Thomas Boraud, Nicolas P. Rougier
 # -----------------------------------------------------------------------------
 from dana import *
 import matplotlib.pyplot as plt
@@ -124,6 +134,7 @@ DenseConnection( Thalamus_mot('U'), Cortex_mot('I'),    1.0 )
 DenseConnection( Cortex_cog('U'),   Thalamus_cog('I'),  0.4 )
 DenseConnection( Cortex_mot('U'),   Thalamus_mot('I'),  0.4 )
 
+
 # Trial setup
 # -----------------------------------------------------------------------------
 @clock.at(500*millisecond)
@@ -154,33 +165,42 @@ def set_trial(t):
 
 # Measurements
 # -----------------------------------------------------------------------------
-size = int(duration/dt)
-
-timesteps   = np.zeros(size)
-motor       = np.zeros((5, n, size))
-cognitive   = np.zeros((5, n, size))
-associative = np.zeros((2, n*n, size))
+dtype = [ ("cortex",   [("mot", float, 4),
+                        ("cog", float, 4),
+                        ("ass", float, 16)]),
+          ("striatum", [("mot", float, 4),
+                        ("cog", float, 4),
+                        ("ass", float, 16)]),
+          ("GPi",      [("mot", float, 4),
+                        ("cog", float, 4)]),
+          ("thalamus", [("mot", float, 4),
+                        ("cog", float, 4)]),
+          ("STN",      [("mot", float, 4),
+                        ("cog", float, 4)])]
+n = int(duration/dt)+1
+timesteps = np.zeros(n)
+records = np.zeros(n, dtype=dtype)
+record_index = 0
 
 @after(clock.tick)
 def register(t):
-    index = int(t*1000)
+    global record_index
 
-    timesteps[index] = t
-
-    motor[0,:,index] = Cortex_mot['U'].ravel()
-    motor[1,:,index] = Striatum_mot['U'].ravel()
-    motor[2,:,index] = STN_mot['U'].ravel()
-    motor[3,:,index] = GPi_mot['U'].ravel()
-    motor[4,:,index] = Thalamus_mot['U'].ravel()
-
-    cognitive[0,:,index] = Cortex_cog['U'].ravel()
-    cognitive[1,:,index] = Striatum_cog['U'].ravel()
-    cognitive[2,:,index] = STN_cog['U'].ravel()
-    cognitive[3,:,index] = GPi_cog['U'].ravel()
-    cognitive[4,:,index] = Thalamus_cog['U'].ravel()
-
-    associative[0,:,index] = Cortex_ass['U'].ravel()
-    associative[1,:,index] = Striatum_ass['U'].ravel()
+    i = record_index
+    timesteps[i] = t
+    records["cortex"]["mot"][i] = Cortex_mot['U'].ravel()
+    records["cortex"]["cog"][i] = Cortex_cog['U'].ravel()
+    records["cortex"]["ass"][i] = Cortex_ass['U'].ravel()
+    records["striatum"]["mot"][i] = Striatum_mot['U'].ravel()
+    records["striatum"]["cog"][i] = Striatum_cog['U'].ravel()
+    records["striatum"]["ass"][i] = Striatum_ass['U'].ravel()
+    records["STN"]["mot"][i] = STN_mot['U'].ravel()
+    records["STN"]["cog"][i] = STN_cog['U'].ravel()
+    records["GPi"]["mot"][i] = GPi_mot['U'].ravel()
+    records["GPi"]["cog"][i] = GPi_cog['U'].ravel()
+    records["thalamus"]["mot"][i] = Thalamus_mot['U'].ravel()
+    records["thalamus"]["cog"][i] = Thalamus_cog['U'].ravel()
+    record_index += 1
 
 
 # Simulation
@@ -190,22 +210,21 @@ run(time=duration, dt=dt)
 
 # Display 1
 # -----------------------------------------------------------------------------
-if 1:
+if 0:
     fig = plt.figure(figsize=(12,5))
     plt.subplots_adjust(bottom=0.15)
 
     fig.patch.set_facecolor('.9')
     ax = plt.subplot(1,1,1)
 
-    plt.plot(timesteps, cognitive[0,0],c='r', label="Cognitive Cortex")
-    plt.plot(timesteps, cognitive[0,1],c='r')
-    plt.plot(timesteps, cognitive[0,2],c='r')
-    plt.plot(timesteps, cognitive[0,3],c='r')
-
-    plt.plot(timesteps, motor[0,0],c='b', label="Motor Cortex")
-    plt.plot(timesteps, motor[0,1],c='b')
-    plt.plot(timesteps, motor[0,2],c='b')
-    plt.plot(timesteps, motor[0,3],c='b')
+    plt.plot(timesteps, records["cortex"]["cog"][:,0],c='r', label="Cognitive Cortex")
+    plt.plot(timesteps, records["cortex"]["cog"][:,1],c='r')
+    plt.plot(timesteps, records["cortex"]["cog"][:,2],c='r')
+    plt.plot(timesteps, records["cortex"]["cog"][:,3],c='r')
+    plt.plot(timesteps, records["cortex"]["mot"][:,0],c='b', label="Motor Cortex")
+    plt.plot(timesteps, records["cortex"]["mot"][:,1],c='b')
+    plt.plot(timesteps, records["cortex"]["mot"][:,2],c='b')
+    plt.plot(timesteps, records["cortex"]["mot"][:,3],c='b')
 
     plt.xlabel("Time (seconds)")
     plt.ylabel("Activity (Hz)")
@@ -215,7 +234,7 @@ if 1:
 
     plt.xticks([0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0],
                ['0.0','0.5\n(Trial start)','1.0','1.5', '2.0','2.5\n(Trial stop)','3.0'])
-    # plt.savefig("model-results.pdf")
+    # plt.savefig("model-single-trial.pdf")
     plt.show()
 
 
@@ -241,13 +260,13 @@ if 0:
     ax.set_title("MOTOR", fontsize=24)
     ax.set_ylabel("STN", fontsize=24)
     for i in range(4):
-        plt.plot(timesteps, motor[2,i], c='k', lw=.5)
+        plt.plot(timesteps, records["STN"]["mot"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,2)
     ax.set_title("COGNITIVE", fontsize=24)
     for i in range(4):
-        plt.plot(timesteps, cognitive[2,i], c='k', lw=.5)
+        plt.plot(timesteps, records["STN"]["cog"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,3,alpha=0)
@@ -260,56 +279,56 @@ if 0:
     ax = subplot(5,3,4)
     ax.set_ylabel("CORTEX", fontsize=24)
     for i in range(4):
-        ax.plot(timesteps, motor[0,i], c='k', lw=.5)
+        plt.plot(timesteps, records["cortex"]["mot"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,5)
     for i in range(4):
-        plt.plot(timesteps, cognitive[0,i], c='k', lw=.5)
+        plt.plot(timesteps, records["cortex"]["cog"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,6)
     for i in range(16):
-        plt.plot(timesteps, associative[0,i], c='k', lw=.5)
+        plt.plot(timesteps, records["cortex"]["ass"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,7)
     ax.set_ylabel("STRIATUM", fontsize=24)
     for i in range(4):
-        plt.plot(timesteps, motor[1,i], c='k', lw=.5)
+        plt.plot(timesteps, records["striatum"]["mot"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,8)
     for i in range(4):
-        plt.plot(timesteps, cognitive[1,i], c='k', lw=.5)
+        plt.plot(timesteps, records["striatum"]["cog"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,9)
     for i in range(16):
-        plt.plot(timesteps, associative[1,i], c='k', lw=.5)
+        plt.plot(timesteps, records["striatum"]["ass"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,10)
     ax.set_ylabel("GPi", fontsize=24)
     for i in range(4):
-        plt.plot(timesteps, motor[3,i], c='k', lw=.5)
+        plt.plot(timesteps, records["GPi"]["mot"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,11)
     for i in range(4):
-        plt.plot(timesteps, cognitive[3,i], c='k', lw=.5)
+        plt.plot(timesteps, records["GPi"]["cog"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,13)
     ax.set_ylabel("THALAMUS", fontsize=24)
     for i in range(4):
-        plt.plot(timesteps, motor[4,i], c='k', lw=.5)
+        plt.plot(timesteps, records["thalamus"]["mot"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
     ax = subplot(5,3,14)
     for i in range(4):
-        plt.plot(timesteps, cognitive[4,i], c='k', lw=.5)
+        plt.plot(timesteps, records["thalamus"]["cog"][:,i], c='k', lw=.5)
     ax.set_xticks([])
 
-    plt.savefig("model-results-all.pdf")
+    # plt.savefig("model-single-trial-all.pdf")
     plt.show()
