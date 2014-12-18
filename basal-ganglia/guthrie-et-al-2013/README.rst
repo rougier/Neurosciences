@@ -1,7 +1,7 @@
 
 M. Guthrie, A Leblois, A. Garenne, T. Boraud, "Interaction between cognitive
 and motor cortico-basal ganglia loops during decision making: a computational
-study", Journal of Neurophysiology, 109:3025-3040, 2013.  ￼
+study", Journal of Neurophysiology, 109:3025-3040, 2013.
 
 **Abstract** In a previous modeling study, Leblois et al. (2006) demonstrated
 an action selection mechanism in cortico-basal ganglia loops based on
