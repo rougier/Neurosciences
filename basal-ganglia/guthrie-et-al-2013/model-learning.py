@@ -61,6 +61,7 @@ GPi_N      =   0.03
 Thalamus_N =   0.001
 
 # Learning parameters
+decision_threshold = 40
 alpha_c     = 0.05
 alpha_LTP  = 0.002
 alpha_LTD  = 0.001
@@ -196,7 +197,7 @@ def register(t):
     U = np.sort(Cortex_mot["U"]).ravel()
 
     # No motor decision yet
-    if abs(U[-1] - U[-2]) < 40: return
+    if abs(U[-1] - U[-2]) < decision_threshold: return
 
     # A motor decision has been made
     c1, c2 = cues_cog.nonzero()[0]
