@@ -194,7 +194,7 @@ P, R = [], []
 
 @after(clock.tick)
 def register(t):
-    U = np.sort(Cortex_mot["U"]).ravel()
+    U = np.sort(Cortex_mot["V"]).ravel()
 
     # No motor decision yet
     if abs(U[-1] - U[-2]) < decision_threshold: return
@@ -202,8 +202,8 @@ def register(t):
     # A motor decision has been made
     c1, c2 = cues_cog.nonzero()[0]
     m1, m2 = cues_mot.nonzero()[0]
-    mot_choice = np.argmax(Cortex_mot['U'])
-    cog_choice = np.argmax(Cortex_cog['U'])
+    mot_choice = np.argmax(Cortex_mot['V'])
+    cog_choice = np.argmax(Cortex_cog['V'])
 
     # The actual cognitive choice may differ from the cognitive choice
     # Only the motor decision can designate the chosen cue
@@ -219,7 +219,8 @@ def register(t):
     R.append(reward)
 
     # Compute prediction error
-    error = cues_reward[choice] - cues_value[choice]
+    #error = cues_reward[choice] - cues_value[choice]
+    error = reward - cues_value[choice]
 
     # Update cues values
     cues_value[choice] += error* alpha_c
