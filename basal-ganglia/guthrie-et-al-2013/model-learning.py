@@ -195,7 +195,7 @@ P, R = [], []
 
 @after(clock.tick)
 def register(t):
-    U = np.sort(Cortex_mot["V"]).ravel()
+    U = np.sort(Cortex_mot["U"]).ravel()
 
     # No motor decision yet
     if abs(U[-1] - U[-2]) < decision_threshold: return
@@ -203,8 +203,8 @@ def register(t):
     # A motor decision has been made
     c1, c2 = cues_cog[:2]
     m1, m2 = cues_mot[:2]
-    mot_choice = np.argmax(Cortex_mot['V'])
-    cog_choice = np.argmax(Cortex_cog['V'])
+    mot_choice = np.argmax(Cortex_mot['U'])
+    cog_choice = np.argmax(Cortex_cog['U'])
 
     # The actual cognitive choice may differ from the cognitive choice
     # Only the motor decision can designate the chosen cue
@@ -237,14 +237,16 @@ def register(t):
     w = clip(W.weights[choice, choice] + dw, Wmin, Wmax)
     W.weights[choice,choice] = w
 
-    if choice == min(c1,c2):
-        print "Choice (%d/%d) : %d (best)" % (c1,c2,choice)
+    # Just for displaying ordered cue
+    oc1,oc2 = min(c1,c2), max(c1,c2)
+    if choice == oc1:
+        print "Choice:          [%d] / %d  (good)" % (oc1,oc2)
     else:
-        print "Choice (%d/%d) : %d (bad)" % (c1,c2,choice)
-    print "Reward (%.2f%%) : %d" % (cues_reward[choice],reward)
-    print "Mean performance: ", np.array(P).mean()
-    print "Mean reward:      ", np.array(R).mean()
-    print
+        print "Choice:           %d / [%d] (bad)" % (oc1,oc2)
+    print "Reward (%3d%%) :   %d" % (int(100*cues_reward[choice]),reward)
+    print "Mean performance: %.3f" % np.array(P).mean()
+    print "Mean reward:      %.3f" % np.array(R).mean()
+    print "Response time:    %d ms" % (1000*clock.time)
 
     # Start a new trial
     reset()
@@ -256,3 +258,6 @@ def register(t):
 for i in range(1200):
     print "Trial", i
     run(time=duration, dt=dt)
+    if clock.time >= duration:
+        print "! Failed trial"
+    print
