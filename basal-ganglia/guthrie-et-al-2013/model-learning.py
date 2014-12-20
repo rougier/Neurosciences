@@ -255,7 +255,7 @@ def register(t):
 
 # Simulation
 # -----------------------------------------------------------------------------
-for i in range(1200):
+for i in range(120):
     print "Trial", i
     run(time=duration, dt=dt)
     if clock.time >= duration:
