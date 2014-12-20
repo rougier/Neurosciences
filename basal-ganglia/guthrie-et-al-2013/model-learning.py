@@ -124,8 +124,8 @@ Thalamus_cog = zeros((n,1), """dV/dt = (-V + I - Thalamus_h)/Thalamus_tau;
 Thalamus_mot = zeros((1,n), """dV/dt = (-V + I - Thalamus_h)/Thalamus_tau;
                                U = noise(V, Thalamus_N); I""")
 
-cues_mot = np.array([1,1,0,0])
-cues_cog = np.array([1,1,0,0])
+cues_mot = np.array([0,1,2,3])
+cues_cog = np.array([0,1,2,3])
 cues_value = np.ones(4) * 0.5
 cues_reward = np.array([3.0,2.0,1.0,0.0])/3.0
 
@@ -167,8 +167,9 @@ def set_trial(t):
 
     np.random.shuffle(cues_cog)
     np.random.shuffle(cues_mot)
-    c1,c2 = cues_cog.nonzero()[0]
-    m1,m2 = cues_mot.nonzero()[0]
+    c1,c2 = cues_cog[:2]
+    m1,m2 = cues_mot[:2]
+
     v = 7
 
     Cortex_mot['Iext'] = 0
@@ -200,8 +201,8 @@ def register(t):
     if abs(U[-1] - U[-2]) < decision_threshold: return
 
     # A motor decision has been made
-    c1, c2 = cues_cog.nonzero()[0]
-    m1, m2 = cues_mot.nonzero()[0]
+    c1, c2 = cues_cog[:2]
+    m1, m2 = cues_mot[:2]
     mot_choice = np.argmax(Cortex_mot['V'])
     cog_choice = np.argmax(Cortex_cog['V'])
 
@@ -209,10 +210,13 @@ def register(t):
     # Only the motor decision can designate the chosen cue
     if mot_choice == m1:
         choice = c1
-        P.append(1.0)
     else:
         choice = c2
-        P.append(0.0)
+
+    if choice == min(c1,c2):
+        P.append(1)
+    else:
+        P.append(0)
 
     # Compute reward
     reward = np.random.uniform(0,1) < cues_reward[choice]
@@ -233,6 +237,11 @@ def register(t):
     w = clip(W.weights[choice, choice] + dw, Wmin, Wmax)
     W.weights[choice,choice] = w
 
+    if choice == min(c1,c2):
+        print "Choice (%d/%d) : %d (best)" % (c1,c2,choice)
+    else:
+        print "Choice (%d/%d) : %d (bad)" % (c1,c2,choice)
+    print "Reward (%.2f%%) : %d" % (cues_reward[choice],reward)
     print "Mean performance: ", np.array(P).mean()
     print "Mean reward:      ", np.array(R).mean()
     print
@@ -244,6 +253,6 @@ def register(t):
 
 # Simulation
 # -----------------------------------------------------------------------------
-for i in range(120):
+for i in range(1200):
     print "Trial", i
     run(time=duration, dt=dt)
