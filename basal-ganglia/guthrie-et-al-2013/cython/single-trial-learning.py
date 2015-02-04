@@ -46,10 +46,11 @@ def weights(shape):
     return (Wmin+(Wmax-Wmin)*N)
 
 
+# These weights will change (learning)
 W = weights(4)
 
 connections = [
-    OneToOne( CTX.cog.V, STR.cog.Isyn, W,   gain=+1.0 ), # Learning here
+    OneToOne( CTX.cog.V, STR.cog.Isyn, W,            gain=+1.0 ),
     OneToOne( CTX.mot.V, STR.mot.Isyn, weights(4),   gain=+1.0 ),
     OneToOne( CTX.ass.V, STR.ass.Isyn, weights(4*4), gain=+1.0 ),
     CogToAss( CTX.cog.V, STR.ass.Isyn, weights(4),   gain=+0.2 ),
