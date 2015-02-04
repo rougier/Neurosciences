@@ -14,6 +14,13 @@
 import numpy as np
 from model import *
 
+# --- Parameter
+ms         = 0.001
+settling   = 500*ms
+trial      = 2500*ms
+dt         = 1*ms
+
+debug      = True
 threshold  = 40
 alpha_c    = 0.05
 alpha_LTP  = 0.002
@@ -166,30 +173,32 @@ def learn(time, debug=True):
     print "Response time:    %d ms" % (time)
 
 
-dt = 0.001
-debug = True
 P, R = [], []
+# 120 trials
+for j in range(120):
+    reset()
 
-# 250 experiments
-for k in range(1):
-    cues_mot = np.array([0,1,2,3])
-    cues_cog = np.array([0,1,2,3])
-    cues_value = np.ones(4) * 0.5
-    P, R = [], []
+    # Settling phase (500ms)
+    i0 = 0
+    i1 = i0+int(settling/dt)
+    for i in xrange(i0,i1):
+        iterate(dt)
 
-    # 120 trials
-    for j in range(120):
-        reset()
-        for i in xrange(0,500):
-            iterate(dt)
-        set_trial()
-        for i in xrange(500,3000):
-            iterate(dt)
-            # Test if a decision has been made
-            if CTX.mot.delta > threshold:
-                learn(time=i-500, debug=debug)
-                break
-        if debug:
-            if i >= 2999:
-                print "! Failed trial"
-            print
+    # Trial setup
+    set_trial()
+
+    # Learning phase (2500ms)
+    i0 = int(settling/dt)
+    i1 = i0+int(trial/dt)
+    for i in xrange(i0,i1):
+        iterate(dt)
+        # Test if a decision has been made
+        if CTX.mot.delta > threshold:
+            learn(time=i-500, debug=debug)
+            break
+
+    # Debug information
+    if debug:
+        if i >= (i1-1):
+            print "! Failed trial"
+        print
