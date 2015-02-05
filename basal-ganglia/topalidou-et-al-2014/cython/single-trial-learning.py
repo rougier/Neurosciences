@@ -40,7 +40,6 @@ THL = Structure( tau=tau, rest=-40.0, noise=0.001, activation=clamp )
 structures = (CTX, STR, STN, GPI, THL)
 
 def weights(shape):
-    Wmin, Wmax = 0.25, 0.75
     N = np.random.normal(0.5, 0.005, shape)
     N = np.minimum(np.maximum(N, 0.0),1.0)
     return (Wmin+(Wmax-Wmin)*N)
@@ -54,7 +53,7 @@ W5 = np.ones(4)
 # W5[...] = [2.0,1.75,1.50,1.25]
 
 connections = [
-    OneToOne( CTX.cog.V, STR.cog.Isyn, W1,           gain=+1.0 ),
+    OneToOne( CTX.cog.V, STR.cog.Isyn, W1,           gain=+1.0 ), # plastic (RL)
     OneToOne( CTX.mot.V, STR.mot.Isyn, weights(4),   gain=+1.0 ),
     OneToOne( CTX.ass.V, STR.ass.Isyn, weights(4*4), gain=+1.0 ),
     CogToAss( CTX.cog.V, STR.ass.Isyn, weights(4),   gain=+0.2 ),
@@ -67,23 +66,19 @@ connections = [
     AssToMot( STR.ass.V, GPI.mot.Isyn, np.ones(4),   gain=-2.0 ),
     OneToAll( STN.cog.V, GPI.cog.Isyn, np.ones(4),   gain=+1.0 ),
     OneToAll( STN.mot.V, GPI.mot.Isyn, np.ones(4),   gain=+1.0 ),
-
-    OneToOne( GPI.cog.V, THL.cog.Isyn, np.ones(4),   gain=-0.25 ),
-    OneToOne( GPI.mot.V, THL.mot.Isyn, np.ones(4),   gain=-0.25 ),
-
     OneToOne( THL.cog.V, CTX.cog.Isyn, np.ones(4),   gain=+0.4 ),
     OneToOne( THL.mot.V, CTX.mot.Isyn, np.ones(4),   gain=+0.4 ),
     OneToOne( CTX.cog.V, THL.cog.Isyn, np.ones(4),   gain=+0.1 ),
     OneToOne( CTX.mot.V, THL.mot.Isyn, np.ones(4),   gain=+0.1 ),
-
-    AllToAll( CTX.mot.V, CTX.mot.Isyn, W2,           gain=+0.5 ),
-    AllToAll( CTX.cog.V, CTX.cog.Isyn, W3,           gain=+0.5 ),
-    AllToAll( CTX.ass.V, CTX.ass.Isyn, W4,           gain=+0.5 ),
-
-    AssToCog( CTX.ass.V, CTX.cog.Isyn, np.ones(4),   gain=+0.00 ),
-    AssToMot( CTX.ass.V, CTX.mot.Isyn, np.ones(4),   gain=+0.01 ),
-    CogToAss( CTX.cog.V, CTX.ass.Isyn, W5,           gain=+0.01 ),
+    AllToAll( CTX.mot.V, CTX.mot.Isyn, W2,           gain=+0.5 ),  # new
+    AllToAll( CTX.cog.V, CTX.cog.Isyn, W3,           gain=+0.5 ),  # new
+    AllToAll( CTX.ass.V, CTX.ass.Isyn, W4,           gain=+0.5 ),  # new
+    AssToCog( CTX.ass.V, CTX.cog.Isyn, np.ones(4),   gain=+0.00 ), # new
+    AssToMot( CTX.ass.V, CTX.mot.Isyn, np.ones(4),   gain=+0.01 ), # new
+    CogToAss( CTX.cog.V, CTX.ass.Isyn, W5,           gain=+0.01 ), # plastic (Hebbian)
     MotToAss( CTX.mot.V, CTX.ass.Isyn, np.ones(4),   gain=+0.00 ),
+    OneToOne( GPI.cog.V, THL.cog.Isyn, np.ones(4),   gain=-0.25 ), # changed
+    OneToOne( GPI.mot.V, THL.mot.Isyn, np.ones(4),   gain=-0.25 ), # changed
 ]
 
 
@@ -138,7 +133,9 @@ def reset():
         structure.reset()
 
 
-def learn(time, debug=True):
+def learn(time, reinforcement=True, hebbian=True, debug=True):
+    global W1, W5
+
     # A motor decision has been made
     c1, c2 = cues_cog[:2]
     m1, m2 = cues_mot[:2]
@@ -172,8 +169,14 @@ def learn(time, debug=True):
     lrate = alpha_LTP if error > 0 else alpha_LTD
     dw = error * lrate * STR.cog.U[choice]
 
-    w = clip(W1[choice] + dw, Wmin, Wmax)
-    W1[choice] = w
+    # Reinforcement learning
+    if reinforcement:
+        w = clip(W1[choice] + dw, Wmin, Wmax)
+        W1[choice] = w
+
+    # Hebbian learning
+    if hebbian:
+        W5 += 0.02*np.minimum(CTX.cog.V,1.0)
 
     if not debug: return
 
@@ -189,9 +192,13 @@ def learn(time, debug=True):
     print "Response time:    %d ms" % (time)
 
 
+
+# -----------------------------------------------------------------------------
 P, R = [], []
+reinforcement, hebbian = True, True
+
 # 120 trials
-for j in range(120):
+for j in range(150):
     reset()
 
     # Settling phase (500ms)
@@ -210,8 +217,18 @@ for j in range(120):
         iterate(dt)
         # Test if a decision has been made
         if CTX.mot.delta > threshold:
-            learn(time=i-500, debug=debug)
+            learn(time=i-500, reinforcement=reinforcement, hebbian=hebbian, debug=debug)
+            print "CTX.cog->CTX.ass:", W5
             break
+
+    # Here we stop learning, disable GPI and reset stats
+    if j == 100:
+        print
+        print "--------------------"
+        P, R = [], []
+        reinforcement, hebbian = False, False
+        connections[-2].active = False
+        connections[-1].active = False
 
     # Debug information
     if debug:

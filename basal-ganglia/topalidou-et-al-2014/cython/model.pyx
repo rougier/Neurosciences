@@ -259,12 +259,14 @@ cdef class AssociativeStructure(Structure):
 
 # ------------------------------------------------------------- Connections ---
 cdef class Connection:
+    cdef int       _active
     cdef double[:] _source
     cdef double[:] _target
     cdef double[:] _weights
     cdef double    _gain
 
     def __init__(self, source, target, weights, gain):
+        self._active = True
         self._gain = gain
         self._source = source
         self._target = target
@@ -281,6 +283,13 @@ cdef class Connection:
             return self._gain
         def __set__(self, value):
             self._gain = value
+
+    property active:
+        """ Whether connection is active """
+        def __get__(self):
+            return self._active
+        def __set__(self, value):
+            self._active = value
 
     property source:
         """Source of the connection """
@@ -304,6 +313,8 @@ cdef class Connection:
 cdef class OneToOne(Connection):
     def propagate(self):
         cdef int i
+        if not self._active: return
+
         for i in range(self._target.shape[0]):
             self._target[i] += self._source[i] * self._weights[i] * self._gain
 
@@ -312,6 +323,8 @@ cdef class OneToOne(Connection):
 cdef class OneToAll(Connection):
     def propagate(self):
         cdef int i,j
+        if not self._active: return
+
         for i in range(4):
             v = self._source[i] * self._weights[i] * self._gain
             for j in range(4):
@@ -323,6 +336,7 @@ cdef class AllToAll(Connection):
         cdef int i,j
         cdef int s_size = self._source.shape[0]
         cdef int t_size = self._target.shape[0]
+        if not self._active: return
 
         for i in range(s_size):
             v = 0
@@ -335,6 +349,8 @@ cdef class AllToAll(Connection):
 cdef class AssToMot(Connection):
     def propagate(self):
         cdef int i,j
+        if not self._active: return
+
         for i in range(4):
             v = 0
             for j in range(4):
@@ -345,6 +361,8 @@ cdef class AssToMot(Connection):
 cdef class AssToCog(Connection):
     def propagate(self):
         cdef int i,j
+        if not self._active: return
+
         for i in range(4):
             v = 0
             for j in range(4):
@@ -357,6 +375,8 @@ cdef class MotToAss(Connection):
     def propagate(self):
         cdef int i,j
         cdef double v
+        if not self._active: return
+
         for i in range(4):
             v = self._source[i] * self._weights[i] * self._gain
             for j in range(4):
@@ -367,6 +387,8 @@ cdef class CogToAss(Connection):
     def propagate(self):
         cdef int i,j
         cdef double v
+        if not self._active: return
+
         for i in range(4):
             v = self._source[i] * self._weights[i] * self._gain
             for j in range(4):
