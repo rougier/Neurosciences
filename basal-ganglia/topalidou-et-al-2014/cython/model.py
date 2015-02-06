@@ -100,6 +100,15 @@ def iterate(dt):
 
 
 def reset():
+    CUE["mot"]    = 0,1,2,3
+    CUE["cog"]    = 0,1,2,3
+    CUE["value"]  = 0.5
+    CUE["reward"] = rewards
+    connections["CTX.cog -> STR.cog"].weights = weights(4)
+    connections["CTX.cog -> CTX.ass"].weights = np.ones(4)
+    reset_activities()
+
+def reset_activities():
     for structure in structures:
         structure.reset()
 
@@ -126,7 +135,6 @@ def process(n=2, learning=True):
 
     # Update cues values
     CUE["value"][choice] += error* alpha_CUE
-    print CUE["value"]
 
     if learning:
 

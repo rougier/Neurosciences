@@ -48,11 +48,11 @@ def debug(time, cues, choice, reward):
 
 
 
+reset()
 P, R = [], []
-CUE["value"] = 0.5
 
 for j in range(120):
-    reset()
+    reset_activities()
 
     # Settling phase (500ms)
     for i in xrange(0,500):

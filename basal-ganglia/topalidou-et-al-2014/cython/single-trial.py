@@ -19,12 +19,11 @@ from display import *
 # connections["GPI.cog -> THL.cog"].active = False
 # connections["GPI.mot -> THL.mot"].active = False
 
+
 reset()
 for i in xrange(  0, 500):
     iterate(dt)
-
 set_trial(n=2)
-
 for i in xrange(500,3000):
     iterate(dt)
 
