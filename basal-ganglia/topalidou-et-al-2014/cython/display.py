@@ -14,6 +14,16 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Record type for display
+htype = [ ("CTX", [("mot", float, 4), ("cog", float, 4), ("ass", float, 16)]),
+          ("STR", [("mot", float, 4), ("cog", float, 4), ("ass", float, 16)]),
+          ("GPI", [("mot", float, 4), ("cog", float, 4)]),
+          ("THL", [("mot", float, 4), ("cog", float, 4)]),
+          ("STN", [("mot", float, 4), ("cog", float, 4)])]
+
+
+# Cortex activity display
+# -----------------------
 def display_ctx(history, duration=3.0, filename=None):
     fig = plt.figure(figsize=(12,5))
     plt.subplots_adjust(bottom=0.15)
@@ -47,6 +57,8 @@ def display_ctx(history, duration=3.0, filename=None):
 
 
 
+# All but cortex activity display
+# -------------------------------
 def display_all(history, duration=3.0, filename=None):
     fig = plt.figure(figsize=(18,12))
     fig.patch.set_facecolor('1.0')

@@ -12,7 +12,7 @@
 #   and T. Boraud. Journal of Neurophysiology, 109:3025–3040, 2013.
 # -----------------------------------------------------------------------------
 import numpy as np
-from model import *
+from cdana import *
 
 tau     = 0.01
 clamp   = Clamp(min=0, max=1000)
@@ -26,6 +26,14 @@ STN = Structure( tau=tau, rest=-10.0, noise=0.001, activation=clamp )
 GPI = Structure( tau=tau, rest=+10.0, noise=0.030, activation=clamp )
 THL = Structure( tau=tau, rest=-40.0, noise=0.001, activation=clamp )
 structures = (CTX, STR, STN, GPI, THL)
+
+CUE = np.zeros(4, dtype=[("mot", float), ("cog", float),
+                         ("value" , float), ("reward", float)])
+CUE["mot"]    = 0,1,2,3
+CUE["cog"]    = 0,1,2,3
+CUE["value"]  = 0.5
+CUE["reward"] = 3/3.,2/3.,1/3.,0/3.
+
 
 def weights(shape):
     Wmin, Wmax = 0.25, 0.75
@@ -73,6 +81,15 @@ connections = [
     MotToAss( CTX.mot.V, CTX.ass.Isyn, np.ones(4),   gain=+0.00 ),
 ]
 
+
+CUE = np.zeros(4, dtype=[("mot", float),
+                         ("cog", float),
+                         ("value" , float),
+                         ("reward", float)])
+CUE["mot"]    = 0,1,2,3
+CUE["cog"]    = 0,1,2,3
+CUE["value"]  = 0.5
+CUE["reward"] = 3,2,1,0
 
 cues_mot = np.array([0,1,2,3])
 cues_cog = np.array([0,1,2,3])

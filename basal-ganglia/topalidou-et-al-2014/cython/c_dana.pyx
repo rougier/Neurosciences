@@ -265,7 +265,7 @@ cdef class Connection:
     cdef double[:] _weights
     cdef double    _gain
 
-    def __init__(self, source, target, weights, gain):
+    def __init__(self, source, target, weights, gain=1.0):
         self._active = True
         self._gain = gain
         self._source = source

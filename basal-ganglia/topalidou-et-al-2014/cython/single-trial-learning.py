@@ -12,7 +12,7 @@
 #   and T. Boraud. Journal of Neurophysiology, 109:3025–3040, 2013.
 # -----------------------------------------------------------------------------
 import numpy as np
-from model import *
+from c_dana import *
 
 # --- Parameter
 ms         = 0.001
@@ -39,6 +39,7 @@ GPI = Structure( tau=tau, rest=+10.0, noise=0.030, activation=clamp )
 THL = Structure( tau=tau, rest=-40.0, noise=0.001, activation=clamp )
 structures = (CTX, STR, STN, GPI, THL)
 
+
 def weights(shape):
     N = np.random.normal(0.5, 0.005, shape)
     N = np.minimum(np.maximum(N, 0.0),1.0)
@@ -50,6 +51,7 @@ W2 = (2*np.eye(4) - np.ones((4,4))).ravel()
 W3 = (2*np.eye(4) - np.ones((4,4))).ravel()
 W4 = (2*np.eye(16) - np.ones((16,16))).ravel()
 W5 = np.ones(4)
+# Debug test to check W5 influences decision
 # W5[...] = [2.0,1.75,1.50,1.25]
 
 connections = [
@@ -66,17 +68,19 @@ connections = [
     AssToMot( STR.ass.V, GPI.mot.Isyn, np.ones(4),   gain=-2.0 ),
     OneToAll( STN.cog.V, GPI.cog.Isyn, np.ones(4),   gain=+1.0 ),
     OneToAll( STN.mot.V, GPI.mot.Isyn, np.ones(4),   gain=+1.0 ),
-    OneToOne( THL.cog.V, CTX.cog.Isyn, np.ones(4),   gain=+0.4 ),
-    OneToOne( THL.mot.V, CTX.mot.Isyn, np.ones(4),   gain=+0.4 ),
-    OneToOne( CTX.cog.V, THL.cog.Isyn, np.ones(4),   gain=+0.1 ),
-    OneToOne( CTX.mot.V, THL.mot.Isyn, np.ones(4),   gain=+0.1 ),
+    OneToOne( THL.cog.V, CTX.cog.Isyn, np.ones(4),   gain=+0.4 ),  # changed
+    OneToOne( THL.mot.V, CTX.mot.Isyn, np.ones(4),   gain=+0.4 ),  # changed
+    OneToOne( CTX.cog.V, THL.cog.Isyn, np.ones(4),   gain=+0.1 ),  # changed
+    OneToOne( CTX.mot.V, THL.mot.Isyn, np.ones(4),   gain=+0.1 ),  # changed
+
     AllToAll( CTX.mot.V, CTX.mot.Isyn, W2,           gain=+0.5 ),  # new
     AllToAll( CTX.cog.V, CTX.cog.Isyn, W3,           gain=+0.5 ),  # new
     AllToAll( CTX.ass.V, CTX.ass.Isyn, W4,           gain=+0.5 ),  # new
-    AssToCog( CTX.ass.V, CTX.cog.Isyn, np.ones(4),   gain=+0.00 ), # new
+    AssToCog( CTX.ass.V, CTX.cog.Isyn, np.ones(4),   gain=+0.01 ), # new (null ?)
     AssToMot( CTX.ass.V, CTX.mot.Isyn, np.ones(4),   gain=+0.01 ), # new
     CogToAss( CTX.cog.V, CTX.ass.Isyn, W5,           gain=+0.01 ), # plastic (Hebbian)
-    MotToAss( CTX.mot.V, CTX.ass.Isyn, np.ones(4),   gain=+0.00 ),
+    MotToAss( CTX.mot.V, CTX.ass.Isyn, np.ones(4),   gain=+0.01 ), # new (null ?)
+
     OneToOne( GPI.cog.V, THL.cog.Isyn, np.ones(4),   gain=-0.25 ), # changed
     OneToOne( GPI.mot.V, THL.mot.Isyn, np.ones(4),   gain=-0.25 ), # changed
 ]
@@ -227,6 +231,9 @@ for j in range(150):
         print "--------------------"
         P, R = [], []
         reinforcement, hebbian = False, False
+
+        # Would be better to name these connections
+        # Here we depend on their place in the connections list
         connections[-2].active = False
         connections[-1].active = False
 
