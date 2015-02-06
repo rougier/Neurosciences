@@ -51,7 +51,6 @@ def debug(time, cues, choice, reward):
 P, R = [], []
 CUE["value"] = 0.5
 
-
 for j in range(120):
     reset()
 

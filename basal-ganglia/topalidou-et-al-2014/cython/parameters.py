@@ -23,7 +23,7 @@ Vh   = 16
 Vc   = 3
 
 # --- Model ---
-decison_threshold  = 40
+decision_threshold = 40
 noise              = 0.001
 CTX_rest   =  -3.0
 STR_rest   =   0.0
