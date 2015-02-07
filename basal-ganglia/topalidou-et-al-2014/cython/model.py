@@ -12,11 +12,11 @@ clamp   = Clamp(min=0, max=1000)
 sigmoid = Sigmoid(Vmin=Vmin, Vmax=Vmax, Vh=Vh, Vc=Vc)
 
 CTX = AssociativeStructure(
-                 tau=tau, rest=CTX_rest, noise=noise, activation=clamp )
+    tau=tau, rest=CTX_rest, noise=0.03, activation=clamp )
 STR = AssociativeStructure(
                  tau=tau, rest=STR_rest, noise=noise, activation=sigmoid )
 STN = Structure( tau=tau, rest=STN_rest, noise=noise, activation=clamp )
-GPI = Structure( tau=tau, rest=GPI_rest, noise=0.030, activation=clamp )
+GPI = Structure( tau=tau, rest=GPI_rest, noise=noise, activation=clamp )
 THL = Structure( tau=tau, rest=THL_rest, noise=noise, activation=clamp )
 structures = (CTX, STR, STN, GPI, THL)
 
@@ -71,18 +71,23 @@ for name,gain in gains.items():
 
 
 # -----------------------------------------------------------------------------
-def set_trial(n=2, shuffle=True):
-    if shuffle:
+def set_trial(n=2, cog_shuffle=True, mot_shuffle=True, noise=noise):
+    if cog_shuffle:
         np.random.shuffle(CUE["cog"])
+    if mot_shuffle:
         np.random.shuffle(CUE["mot"])
     CTX.mot.Iext = 0
     CTX.cog.Iext = 0
     CTX.ass.Iext = 0
     for i in range(n):
         c, m = CUE["cog"][i], CUE["mot"][i]
-        CTX.mot.Iext[m]     = V_cue + np.random.normal(0,V_cue*noise)
-        CTX.cog.Iext[c]     = V_cue + np.random.normal(0,V_cue*noise)
-        CTX.ass.Iext[c*4+m] = V_cue + np.random.normal(0,V_cue*noise)
+        #CTX.mot.Iext[m]     = V_cue + np.random.normal(0,V_cue*noise)
+        #CTX.cog.Iext[c]     = V_cue + np.random.normal(0,V_cue*noise)
+        #CTX.ass.Iext[c*4+m] = V_cue + np.random.normal(0,V_cue*noise)
+
+        CTX.mot.Iext[m]     = V_cue + np.random.uniform(-noise/2,noise/2)
+        CTX.cog.Iext[c]     = V_cue + np.random.uniform(-noise/2,noise/2)
+        CTX.ass.Iext[c*4+m] = V_cue + np.random.uniform(-noise/2,noise/2)
 
 
 def iterate(dt):
@@ -103,7 +108,7 @@ def reset():
     CUE["mot"]    = 0,1,2,3
     CUE["cog"]    = 0,1,2,3
     CUE["value"]  = 0.5
-    CUE["reward"] = rewards
+    # CUE["reward"] = rewards
     connections["CTX.cog -> STR.cog"].weights = weights(4)
     connections["CTX.cog -> CTX.ass"].weights = np.ones(4)
     reset_activities()
@@ -113,11 +118,7 @@ def reset_activities():
         structure.reset()
 
 
-# def process(n=2, learning=True)
-# def learn(reinforcement=True, hebbian=True):
-
 def process(n=2, learning=True):
-
     # A motor decision has been made
     # The actual cognitive choice may differ from the cognitive choice
     # Only the motor decision can designate the chosen cue
@@ -136,16 +137,50 @@ def process(n=2, learning=True):
     # Update cues values
     CUE["value"][choice] += error* alpha_CUE
 
-    if learning:
+    if isinstance(learning,(bool,int)):
+        learning = learning,learning
 
+    if learning[0]:
         # Reinforcement learning
         lrate = alpha_LTP if error > 0 else alpha_LTD
         dw = error * lrate * STR.cog.U[choice]
         W = connections["CTX.cog -> STR.cog"].weights
         W[choice] = min(max(W[choice]+dw,Wmin),Wmax)
 
+    if learning[1]:
         # Hebbian learning
         W = connections["CTX.cog -> CTX.ass"].weights
-        W += alpha_LTP * np.minimum(CTX.cog.V,10.0)
+        W += alpha_LTP * np.minimum(CTX.cog.V,5.0)
 
     return CUE["cog"][:n], choice, reward
+
+
+def debug(time, cues, choice, reward):
+    n = len(cues)
+    cues = np.sort(cues)
+
+    R.append(reward)
+    if choice == cues[0]:
+        P.append(1)
+    else:
+        P.append(0)
+
+    print "Choice:         ",
+    for i in range(n):
+        if choice == cues[i]:
+            print "[%d]" % cues[i],
+        else:
+            print "%d" % cues[i],
+        if i < (n-1):
+            print "/",
+    if choice == cues[0]:
+        print " (good)"
+    else:
+        print " (bad)"
+
+    print "Reward (%3d%%) :   %d" % (int(100*CUE["reward"][choice]),reward)
+    print "Mean performance: %.3f" % np.array(P).mean()
+    print "Mean reward:      %.3f" % np.array(R).mean()
+    print "Response time:    %d ms" % (time)
+    print "CTX.cog->CTX.ass:", connections["CTX.cog -> CTX.ass"].weights
+    print

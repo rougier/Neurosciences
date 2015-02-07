@@ -49,7 +49,7 @@ def debug(time, cues, choice, reward):
 
 
 reset()
-P, R = [], []
+P, R, RT = [], [], []
 
 for j in range(120):
     reset_activities()
@@ -68,16 +68,23 @@ for j in range(120):
         # Test if a decision has been made
         if CTX.mot.delta > decision_threshold:
             time = i-500
+            RT.append(time)
             cues, choice, reward = process(n=2, learning=True)
             debug(time, cues, choice, reward)
             break
 
+
+
     # Here we stop learning, disable GPI and reset stats
     if j == 100:
-        print
+        #print np.mean(P)
+        print np.mean(RT)
         print "--------------------"
-        P, R = [], []
+        P, R, RT = [], [], []
         reinforcement, hebbian = False, False
         # Make GPI lesion
         connections["GPI.cog -> THL.cog"].active = False
         connections["GPI.mot -> THL.mot"].active = False
+
+#print np.mean(P)
+print np.mean(RT)

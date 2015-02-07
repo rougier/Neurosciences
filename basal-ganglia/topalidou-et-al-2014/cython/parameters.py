@@ -12,7 +12,7 @@ dt           = 1*ms
 tau          = 10*ms
 
 # --- Learning ---
-alpha_CUE  = 0.05
+alpha_CUE  = 0.050
 alpha_LTP  = 0.002
 alpha_LTD  = 0.001
 
@@ -64,7 +64,7 @@ gains = { "CTX.cog -> STR.cog" : +1.0,
           "CTX.ass -> CTX.ass" : +0.5,
 
           "CTX.ass -> CTX.cog" : +0.01,
-          "CTX.ass -> CTX.mot" : +0.01,
-          "CTX.cog -> CTX.ass" : +0.01,
+          "CTX.ass -> CTX.mot" : +0.025,
+          "CTX.cog -> CTX.ass" : +0.025,
           "CTX.mot -> CTX.ass" : +0.01,
  }
