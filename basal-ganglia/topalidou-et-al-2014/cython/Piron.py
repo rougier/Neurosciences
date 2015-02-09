@@ -9,17 +9,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-C1 = np.load("Piron-C1.npy")
-C2 = np.load("Piron-C2.npy")
-C3 = np.load("Piron-C3.npy")
-C4 = np.load("Piron-C4.npy")
+C1 = np.load("Piron-C1.npy")[:,:60]
+C2 = np.load("Piron-C2.npy")[:,:60]
+C3 = np.load("Piron-C3.npy")[:,:60]
+C4 = np.load("Piron-C4.npy")[:,:60]
+
 
 
 from matplotlib import rcParams
 rcParams['xtick.direction'] = 'out'
 rcParams['ytick.direction'] = 'out'
 
-plt.figure(figsize=(8,4), dpi=72, facecolor="white")
+plt.figure(figsize=(10,5), dpi=72, facecolor="white")
 axes = plt.subplot(111)
 axes.spines['right'].set_color('none')
 axes.spines['top'].set_color('none')
@@ -27,23 +28,24 @@ axes.xaxis.set_ticks_position('bottom')
 axes.spines['bottom'].set_position(('data',0))
 axes.yaxis.set_ticks_position('left')
 
+n = C1.shape[1]
 
 
-axes.plot(np.arange(120), np.mean(C1["P"],axis=0),
+axes.plot(np.arange(n), np.mean(C1["P"],axis=0),
           lw=1.5, c='0.5', linestyle="--", label="HC with GPi")
-axes.plot(np.arange(120), np.mean(C3["P"],axis=0),
+axes.plot(np.arange(n), np.mean(C3["P"],axis=0),
           lw=1.5, c='0.0', linestyle="--", label="NC with GPi")
-axes.plot(np.arange(120), np.mean(C2["P"],axis=0),
+axes.plot(np.arange(n), np.mean(C2["P"],axis=0),
           lw=1.5, c='0.5', linestyle="-", label="HC without GPi")
-axes.plot(np.arange(120), np.mean(C4["P"],axis=0),
-          lw=1.5, c='0.0', linestyle="-", label="HC without GPi")
+axes.plot(np.arange(n), np.mean(C4["P"],axis=0),
+          lw=1.5, c='0.0', linestyle="-", label="NC without GPi")
 
 plt.legend(loc='lower right', frameon=False)
 
 plt.xlabel("Trial number")
 plt.ylabel("Proportion of optimum trials")
 
-plt.xlim(0,119)
+plt.xlim(0,n)
 plt.ylim(0,1.05)
 plt.tight_layout()
 plt.savefig("Performances.pdf")
@@ -53,6 +55,7 @@ plt.show()
 
 fig = plt.figure(figsize=(6,5), dpi=72, facecolor="white")
 fig.subplots_adjust(bottom=0.25)
+fig.subplots_adjust(left=0.15)
 
 ax = plt.subplot(111)
 ax.spines['right'].set_color('none')

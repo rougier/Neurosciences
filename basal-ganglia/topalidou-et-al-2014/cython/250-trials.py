@@ -53,7 +53,7 @@ P = np.zeros((n_experiments,n_trials))
 filename = "%d-experiments-%d-trials-performances.npy" % (n_experiments, n_trials)
 
 # Put 1 if you want to run a new set of experiments
-if 1:
+if 0:
     for k in range(n_experiments):
         reset()
         p = []
